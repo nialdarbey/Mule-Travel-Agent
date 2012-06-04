@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<wsdl:definitions xmlns:cred="http://www.mule-credit.com/CreditCardService/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="CreditCardService" targetNamespace="http://www.mule-credit.com/CreditCardService/">
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://www.mule-credit.com/CreditCardService/">
+      <xsd:element name="PaymentRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="amount" type="xsd:float"/>
+            <xsd:element name="ccNumber" type="xsd:string"/>
+            <xsd:element name="expirationDate" type="xsd:date" />
+            <xsd:element name="securityCode" type="xsd:string" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="PaymentResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="authorisationNumber" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="PaymentRequest">
+    <wsdl:part element="cred:PaymentRequest" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="PaymentResponse">
+    <wsdl:part element="cred:PaymentResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:portType name="CreditCardService">
+    <wsdl:operation name="authorisePayment">
+      <wsdl:input message="cred:PaymentRequest"/>
+      <wsdl:output message="cred:PaymentResponse"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="CreditCardServiceSOAP" type="cred:CreditCardService">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="authorisePayment">
+      <soap:operation soapAction="http://www.mule-credit.com/CreditCardService/authorisePayment"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="CreditCardService">
+    <wsdl:port binding="cred:CreditCardServiceSOAP" name="CreditCardServiceSOAP">
+      <soap:address location="http://www.mule-credit.com/"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

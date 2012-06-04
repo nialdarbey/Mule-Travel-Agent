@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<wsdl:definitions xmlns:hot="http://www.mule-hotel.com/HotelService/"
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="HotelService"
+	targetNamespace="http://www.mule-hotel.com/HotelService/">
+	<wsdl:types>
+		<xsd:schema targetNamespace="http://www.mule-hotel.com/HotelService/">
+			<xsd:element name="AvailabilityRequest">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="startDate" type="xsd:date" />
+						<xsd:element name="numberOfNights" type="xsd:integer" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="AvailabilityResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="room" maxOccurs="unbounded">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="id" xsd:type="string" />
+									<xsd:element name="roomType">
+										<xsd:simpleType name="roomType">
+											<xsd:restriction base="xsd:string">
+												<xsd:enumeration value="Single" />
+												<xsd:enumeration value="Double" />
+												<xsd:enumeration value="Presidential" />
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+									<xsd:element name="price" type="xsd:float" />
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="ReservationRequest">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="roomId" type="xsd:string" />
+						<xsd:element name="startDate" type="xsd:date" />
+						<xsd:element name="numberOfNights" type="xsd:integer" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="ReservationResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="reservationNumber" type="xsd:string" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:schema>
+	</wsdl:types>
+	<wsdl:message name="AvailabilityRequest">
+		<wsdl:part element="hot:AvailabilityRequest" name="parameters" />
+	</wsdl:message>
+	<wsdl:message name="AvailabilityResponse">
+		<wsdl:part element="hot:AvailabilityResponse" name="parameters" />
+	</wsdl:message>
+	<wsdl:message name="RoomReservationRequest">
+		<wsdl:part element="hot:ReservationRequest" name="parameters" />
+	</wsdl:message>
+	<wsdl:message name="RoomReservationResponse">
+		<wsdl:part element="hot:ReservationResponse" name="parameters" />
+	</wsdl:message>
+	<wsdl:portType name="HotelService">
+		<wsdl:operation name="getAvailableRooms">
+			<wsdl:input message="hot:AvailabilityRequest" />
+			<wsdl:output message="hot:AvailabilityResponse" />
+		</wsdl:operation>
+		<wsdl:operation name="reserveRoom">
+			<wsdl:input message="hot:RoomReservationRequest" />
+			<wsdl:output message="hot:RoomReservationResponse" />
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:binding name="HotelServiceSOAP" type="hot:HotelService">
+		<soap:binding style="document"
+			transport="http://schemas.xmlsoap.org/soap/http" />
+		<wsdl:operation name="getAvailableRooms">
+			<soap:operation
+				soapAction="http://www.mule-hotel.com/HotelService/getAvailableRooms" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="reserveRoom">
+			<soap:operation soapAction="http://www.mule-hotel.com/HotelService/reserveRoom" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:service name="HotelService">
+		<wsdl:port binding="hot:HotelServiceSOAP" name="HotelServiceSOAP">
+			<soap:address location="http://www.mule-hotel.com/" />
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>

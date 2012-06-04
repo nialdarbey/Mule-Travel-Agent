@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:cxf="http://www.mulesoft.org/schema/mule/cxf" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:core="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="EE-3.3.0" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/cxf http://www.mulesoft.org/schema/mule/cxf/current/mule-cxf.xsd 
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd 
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd ">
+    <flow name="mockAirline" doc:name="mockAirline">
+        <http:inbound-endpoint xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" exchange-pattern="request-response" host="localhost" port="9090" path="reservations" doc:name="HTTP"></http:inbound-endpoint>
+        <cxf:jaxws-service xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" port="80" serviceClass="com.mule_air.airline.AirlineService" doc:name="SOAP"></cxf:jaxws-service>
+        <component xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" class="com.mule_air.airline.AirlineServiceImpl" doc:name="Java"></component>
+    </flow>
+    <flow name="mockHotel" doc:name="mockHotel">
+        <http:inbound-endpoint xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" exchange-pattern="request-response" host="localhost" port="9595" path="reservations" doc:name="HTTP"></http:inbound-endpoint>
+        <cxf:jaxws-service xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" serviceClass="com.mule_hotel.hotelservice.HotelService" doc:name="SOAP"></cxf:jaxws-service>
+        <component xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" class="com.mule_hotel.hotelservice.HotelServiceImpl" doc:name="Java"></component>
+        <logger message="#[payload.rooms[0].roomType]" level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="mockCreditCard" doc:name="mockCreditCard">
+        <http:inbound-endpoint xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" exchange-pattern="request-response" host="localhost" port="9999" path="authorisations" doc:name="HTTP"></http:inbound-endpoint>
+        <cxf:jaxws-service xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" serviceClass="com.mule_credit.creditcardservice.CreditCardService" doc:name="SOAP"></cxf:jaxws-service>
+        <component xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" class="com.mule_credit.creditcardservice.CreditCardServiceImpl" doc:name="Java"></component>
+    </flow>
+</mule>

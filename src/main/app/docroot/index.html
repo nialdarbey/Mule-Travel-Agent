@@ -1,0 +1,121 @@
+<html>
+<head>
+<link href="css/south-street/jquery-ui-1.8.20.custom.css"
+	rel="stylesheet" type="text/css" />
+<link href="css/estore.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="js/jquery-ui-1.8.20.custom.min.js"></script>
+<script type="text/javascript" src="mule-resource/js/mule.js"></script>
+</head>
+<body>
+
+<h1>Mule Travel Agent</h1>
+<div id="tabs">
+<ul>
+	<li><a href="#form"><span>Form</span></a></li>
+	<li><a href="#confirmation"><span>Confirmation</span></a></li>
+</ul>
+<a id="submitButton" class="button" style="float:right;">Submit &gt;&gt;</a>
+<a id="resetButton" class="button" style="float: right:">Reset</a>
+<div id="main" style="padding: 1em;">
+<p>Travel Details</p>
+<table width='40%' class='payment'>
+	<tr>
+		<td class="title">Begin Date</td>
+		<td class="field"><input size="10" maxlength="16" name="orderId" id="orderId"
+			type="text" /></td>
+	</tr>
+	<tr>
+		<td class="title">Nights:</td>
+		<td class="field"><input size="30" name="firstName" id="firstName"
+			type="text" />
+		</td>
+	</tr>
+	<tr>
+		<td class="title">Room Preference:</td>
+		<td class="field"><input size="30" maxlength="100"
+			name="lastName" id="lastName" type="text" /></td>
+	</tr>
+	<tr>
+		<td class="title">From:</td>
+		<td class="field"><input size="30" maxlength="100" name="address" id="address"
+			type="text" /></td>
+	</tr>
+		<tr>
+		<td class="title">To:</td>
+		<td class="field"><input size="30" maxlength="100" name="address" id="address"
+			type="text" /></td>
+	</tr>
+		<tr>
+		<td class="title">User Id:</td>
+		<td class="field"><input size="30" maxlength="100" name="address" id="address"
+			type="text" /></td>
+	</tr>
+</table>
+</div>
+</div>
+
+
+<script>
+	$.ajax({
+		url : "http://localhost:9080/populate"
+	})
+	mule.rpc("/orders/manufacturers", "", manufacturersResponse);
+	tabs = $("#tabs").tabs({
+		selected : 0
+	});
+	$('.button').button();
+
+	$('#addItemButton').click(function() {
+		$('#orderItemTable tbody').append('<tr><td class="manufacturer">' + '</td><td class="name">' + $("#productName").val() + '</td><td class="productId">' + $("#productId").val() + '</td><td class="quantity">' + $("#quantity").val() + '</td><td><a class="deleteButton" style="background-color: red; color:white; padding: 2px 5px;">Delete</a></tr>');
+		$('.deleteButton')
+			.click(function() {
+				$(this).parent('td').parent('tr').remove();
+			});
+		$('#newItem input').val('');
+	})
+	$('#submitButton').click(function() {
+		var order = {
+			orderId: $('#orderId').val(),
+			customer: {
+				firstName: $('#firstName').val(),
+				lastName: $('#lastName').val(),
+				address: $('#address').val()
+			},
+			orderItems: []
+		}
+		$('#orderItemTable tbody tr').each(function() {
+			var manufacturer = $('td.manufacturer', this)[0].innerHTML;
+			var name = $('td.name', this)[0].innerHTML;
+			var productId = $('td.productId', this)[0].innerHTML;
+			var quantity = $('td.quantity', this)[0].innerHTML;
+			orderRequest.orderItems.push({
+				"manufacturer" : manufacturer,
+				"name" : name,
+				"productId" : productId,
+				"quantity" : quantity
+			})
+			
+		})
+		var request = JSON.stringify(order);
+		mule.rpc("/orders/request", request, orderResponse);
+	})
+	$('#resetButton').click(function() {
+		$('#main input').val('');
+	})
+	function manufacturersResponse(message) {
+		products = JSON.parse("[" + message.data + "]");
+		for (i = 0; i < products.length; i++) {
+			$('#manufacturerSelect').append(
+					'<option value=' + '"' + products[i] + '">' + products[i]
+							+ '</option>')
+		}
+	}
+	function orderResponse(message) {
+		tabs.tabs('select', 1);
+		alert(message.data);
+	}
+
+</script>
+</body>
+</html>

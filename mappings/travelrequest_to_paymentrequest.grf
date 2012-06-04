@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="nialdarbey" created="Sun May 27 18:50:44 GMT-03:00 2012" guiVersion="3.3.0.M2" id="1338159015287" licenseCode="Unlicensed" licenseType="Unknown" modified="Sun May 27 18:50:44 GMT-03:00 2012" modifiedBy="nialdarbey" name="TravelRequest to PaymentRequest" revision="1.0" showComponentDetails="false">
+<Global>
+<Metadata __sourcePath="{}/object" _dataStructure="OBJECT" _id="__id" _type="Output" id="Metadata1">
+<Record fieldDelimiter="|" name="PaymentRequest" recordDelimiter="&#10;" type="delimited">
+<Field __artificialType="_id" __systemManaged="true" name="__id" type="string"/>
+<Field __sourcePath="{}/object/amount" containerType="" label="amount" name="amount" type="number"/>
+<Field __sourcePath="{}/object/ccNumber" containerType="" label="ccNumber" name="ccNumber" type="string"/>
+<Field __sourcePath="{}/object/expirationDate" containerType="" label="expirationDate" name="expirationDate" type="date"/>
+<Field __sourcePath="{}/object/securityCode" containerType="" label="securityCode" name="securityCode" type="string"/>
+</Record>
+</Metadata>
+<Metadata __sourcePath="{}/object" _dataStructure="OBJECT" _id="__id" _type="Input" id="Metadata0">
+<Record fieldDelimiter="|" name="TravelRequest" recordDelimiter="&#10;" type="delimited">
+<Field __artificialType="_id" __systemManaged="true" name="__id" type="string"/>
+<Field __sourcePath="{}/object/beginDate" containerType="" label="beginDate" name="beginDate" type="date"/>
+<Field __sourcePath="{}/object/fromCity" containerType="" label="fromCity" name="fromCity" type="string"/>
+<Field __sourcePath="{}/object/nights" containerType="" label="nights" name="nights" type="integer"/>
+<Field __sourcePath="{}/object/roomPreference" containerType="" label="roomPreference" name="roomPreference" type="string"/>
+<Field __sourcePath="{}/object/toCity" containerType="" label="toCity" name="toCity" type="string"/>
+<Field __sourcePath="{}/object/userId" containerType="" label="userId" name="userId" type="string"/>
+</Record>
+</Metadata>
+<Dictionary>
+<Entry id="DictionaryEntry0" input="true" name="inputPayload" output="false" type="object"/>
+<Entry id="DictionaryEntry1" input="false" name="outputPayload" output="true" type="object"/>
+</Dictionary>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="dict:inputPayload" guiHeight="0" guiName="JAVA Reader" guiWidth="0" guiX="20" guiY="20" id="BEAN_READER0" type="BEAN_READER">
+<attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Context outPort="0" sequenceField="__id" xpath=".">
+  <Mapping cloverField="beginDate" trim="true" xpath="beginDate"/>
+  <Mapping cloverField="fromCity" trim="true" xpath="fromCity"/>
+  <Mapping cloverField="nights" trim="true" xpath="nights"/>
+  <Mapping cloverField="roomPreference" trim="true" xpath="roomPreference"/>
+  <Mapping cloverField="toCity" trim="true" xpath="toCity"/>
+  <Mapping cloverField="userId" trim="true" xpath="userId"/>
+</Context>
+]]></attr>
+<attr name="_data_format"><![CDATA[JAVA]]></attr>
+<attr name="schema"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<schema-object>
+  <typed-object-ref type-ref="com.mule_travel.travelagent.TravelRequest"/>
+  <typed-object type="java.math.BigInteger"/>
+  <typed-object type="com.mule_travel.travelagent.TravelRequest">
+    <typed-object-ref name="beginDate" type-ref="java.util.Date"/>
+    <typed-object-ref name="fromCity" type-ref="java.lang.String"/>
+    <typed-object-ref name="nights" type-ref="java.math.BigInteger"/>
+    <typed-object-ref name="roomPreference" type-ref="java.lang.String"/>
+    <typed-object-ref name="toCity" type-ref="java.lang.String"/>
+    <typed-object-ref name="userId" type-ref="java.lang.String"/>
+  </typed-object>
+  <typed-object type="java.lang.String"/>
+  <typed-object type="java.util.Date"/>
+</schema-object>
+]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="dict:outputPayload" guiHeight="0" guiName="JAVA Writer" guiWidth="0" guiX="460" guiY="20" id="BEAN_WRITER0" type="BEAN_WRITER">
+<attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<object xmlns:clover="http://www.cloveretl.com/ns/xmlmapping" clover:inPort="0">
+  <amount>$0.amount</amount>
+  <ccNumber>$0.ccNumber</ccNumber>
+  <expirationDate>$0.expirationDate</expirationDate>
+  <securityCode>$0.securityCode</securityCode>
+</object>]]></attr>
+<attr name="_data_format"><![CDATA[JAVA]]></attr>
+<attr name="schema"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<schema-object>
+  <typed-object-ref type-ref="com.mule_credit.creditcardservice.PaymentRequest"/>
+  <typed-object type="com.mule_credit.creditcardservice.PaymentRequest">
+    <typed-object-ref name="amount" type-ref="float"/>
+    <typed-object-ref name="ccNumber" type-ref="java.lang.String"/>
+    <typed-object-ref name="expirationDate" type-ref="java.util.Date"/>
+    <typed-object-ref name="securityCode" type-ref="java.lang.String"/>
+  </typed-object>
+  <typed-object type="java.lang.String"/>
+  <typed-object type="java.util.Date"/>
+  <typed-object type="float"/>
+</schema-object>
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="object_to_object" guiWidth="0" guiX="240" guiY="20" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+$out.0.__id=$in.0.__id;
+		return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Edge fromNode="BEAN_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
+<Edge fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="BEAN_WRITER0:0"/>
+</Phase>
+</Graph>

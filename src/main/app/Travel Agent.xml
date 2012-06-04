@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ajax="http://www.mulesoft.org/schema/mule/ajax" xmlns:cxf="http://www.mulesoft.org/schema/mule/cxf" xmlns:jdbc="http://www.mulesoft.org/schema/mule/ee/jdbc" xmlns:data-mapper="http://www.mulesoft.org/schema/mule/ee/data-mapper" xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:core="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="EE-3.3.0" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd 
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/ajax http://www.mulesoft.org/schema/mule/ajax/current/mule-ajax.xsd 
+http://www.mulesoft.org/schema/mule/cxf http://www.mulesoft.org/schema/mule/cxf/current/mule-cxf.xsd 
+http://www.mulesoft.org/schema/mule/ee/jdbc http://www.mulesoft.org/schema/mule/ee/jdbc/current/mule-jdbc-ee.xsd 
+http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schema/mule/ee/data-mapper/3.2/mule-data-mapper.xsd 
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd 
+http://www.mulesoft.org/schema/mule/jbossts http://www.mulesoft.org/schema/mule/jbossts/current/mule-jbossts.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd 
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd ">
+    <ajax:connector name="ajaxServer" serverUrl="http://0.0.0.0:8090/orders" resourceBase="${app.home}/docroot" jsonCommented="true" doc:name="ajaxServer"/>
+    <expression-filter expression="#[payload.price &lt; flowVars['minPrice']]" name="LowerPriceFilter" doc:name="Expression"/>
+    <configuration doc:name="Configuration">
+        <expression-language autoResolveVariables="false"> 
+            <import class="java.text.SimpleDateFormat"/>  
+            <global-functions>def diffDays(beginDate) { return (new Date() - dateFormatter(beginDate)) / (1000 * 60 * 60 * 24) } def dateFormatter(beginDate) { java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat('EEE MMM dd HH:mm:ss z yyyy'); return formatter.parse(beginDate) }</global-functions> 
+        </expression-language>
+    </configuration>
+    <spring:beans>
+        <spring:bean id="Derby_Data_Source" class="org.enhydra.jdbc.standard.StandardXADataSource" destroy-method="shutdown">
+            <spring:property name="driverName" value="org.apache.derby.jdbc.EmbeddedDriver"/>
+            <spring:property name="url" value="jdbc:derby:muleEmbeddedDB;create=true"/>
+        </spring:bean>
+    </spring:beans>
+    <jdbc:connector name="JDBCConnector" dataSource-ref="Derby_Data_Source" validateConnections="true" queryTimeout="-1" pollingFrequency="0" doc:name="JDBCConnector"/>
+    <jbossts:transaction-manager xmlns:jbossts="http://www.mulesoft.org/schema/mule/jbossts">  
+        <property key="com.arjuna.ats.arjuna.coordinator.defaultTimeout" value="600"></property>  
+        <property key="com.arjuna.ats.arjuna.coordinator.txReaperTimeout" value="1000000"></property> 
+    </jbossts:transaction-manager>
+    <data-mapper:config name="TravelRequest to FlightReservationRequest" transformationGraphPath="travelrequest_to_flightreservationrequest.grf" doc:name="TravelRequest to FlightReservationRequest"/>
+    <ee:object-store-caching-strategy name="Caching_Strategy" keyGenerationExpression="#[diffDays(payload.beginDate) &lt; 30]" doc:name="Caching Strategy">
+        <in-memory-store/>
+    </ee:object-store-caching-strategy>
+    <data-mapper:config name="TravelRequest to AvailabilityRequest" transformationGraphPath="travelrequest_to_availabilityrequest.grf" doc:name="TravelRequest to AvailabilityRequest"/>
+    <data-mapper:config name="TravelRequest to AvailabilityRequest" transformationGraphPath="travelrequest_to_availabilityrequest_1.grf" doc:name="TravelRequest to AvailabilityRequest"/>
+    <data-mapper:config name="TravelRequest to PaymentRequest" transformationGraphPath="travelrequest_to_paymentrequest.grf" doc:name="TravelRequest to PaymentRequest"/>
+    <data-mapper:config name="TravelRequest to ConfirmationRequest" transformationGraphPath="travelrequest_to_confirmationrequest.grf" doc:name="TravelRequest to ConfirmationRequest"/>
+    <scripting:transformer name="exceptionThrower" doc:name="Groovy">
+        <scripting:script engine="Groovy">
+            <scripting:text><![CDATA[throw new Exception("Sorry, we could not process your request");]]></scripting:text>
+        </scripting:script>
+    </scripting:transformer>
+    <flow name="Travel_AgentFlow1" doc:name="Travel_AgentFlow1">
+        <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="8081" path="reservations" doc:name="/reservations"/>
+        <cxf:jaxws-service port="80" serviceClass="com.mule_travel.travelagent.TravelAgentService" doc:name="TravelAgentService"/>
+        <enricher target="#[header:session:flightReservationResponse]" doc:name="Enrich with flightReservationResponse">
+            <core:flow-ref name="reserveFlight" doc:name="Reserve flight"/>
+        </enricher>
+        <enricher target="#[variable:suitableRoom]" doc:name="Enrich with suitableRoom">
+            <core:flow-ref name="getBestHotelRoom" doc:name="Get best hotel room"/>
+        </enricher>
+        <message-filter onUnaccepted="exceptionThrower" doc:name="Filter on suitable room found">
+            <expression-filter expression="'com.mule_hotel.hotelservice.AvailabilityResponse$Room' == suitableRoom.class.name)"/>
+        </message-filter>
+        <enricher target="#[variable:commissionRate]" doc:name="Enrich with commission">
+            <core:flow-ref name="getCommissionRate" doc:name="Get commission rate"/>
+        </enricher>
+        <vm:outbound-endpoint exchange-pattern="request-response" path="confirm" doc:name="Confirm"/>
+        <expression-transformer expression="#[response = new com.mule_travel.travelagent.TravelResponse(); response.setConfirmationNumber(&quot;1234&quot;); response.setTotalPrice(price.floatValue()); response]" doc:name="Expression"/>
+        <logger message="Successfully confirmed reservations" level="INFO" doc:name="Logger"/>
+    </flow>
+    <sub-flow name="reserveFlight" doc:name="reserveFlight">
+        <expression-transformer expression="#[reservationRequest = new com.mule_air.airline.FlightReservationRequest(); startDate = payload.beginDate; endDate = Calendar.getInstance(); endDate.setTime(startDate); endDate.add(Calendar.DATE, payload.nights); reservationRequest.setDeparting(startDate); reservationRequest.setReturning(endDate.time); reservationRequest.setFrom(payload.fromCity); reservationRequest.setTo(payload.toCity); reservationRequest.setTravelAgentId(&quot;Mule_Travel&quot;); reservationRequest]" doc:name="TravelRequest to FlightReservationRequest"/>
+        <cxf:jaxws-client operation="reserveFlight" clientClass="com.mule_air.airline.AirlineService_Service" port="AirlineSOAP" enableMuleSoapHeaders="true" doc:name="AirlineService"/>
+        <http:outbound-endpoint exchange-pattern="request-response" host="localhost" port="9090" path="reservations" doc:name="/airline/reserveFlight"/>
+    </sub-flow>
+    <sub-flow name="getAvailableRooms" doc:name="getAvailableRooms">
+        <expression-transformer expression="#[request = new com.mule_hotel.hotelservice.AvailabilityRequest(); request.setStartDate(payload.beginDate); request.setNumberOfNights(payload.nights); request.setTravelAgentId('mule-travel'); request.setCity(payload.toCity); request]" doc:name="Expression"/>
+        <cxf:jaxws-client operation="getAvailableRooms" clientClass="com.mule_hotel.hotelservice.HotelService_Service" port="HotelServiceSOAP" doc:name="HotelService"/>
+        <http:outbound-endpoint exchange-pattern="request-response" host="localhost" port="9595" path="reservations" doc:name="/reservations"/>
+    </sub-flow>
+    <sub-flow name="getBestHotelRoom" doc:name="getBestHotelRoom">
+        <enricher target="#[variable:availabilityResponse]" doc:name="Enrich with availabilityResponse">
+            <core:flow-ref name="getAvailableRooms" doc:name="Get available Rooms"/>
+        </enricher>
+        <logger level="INFO" doc:name="Logger"/>
+        <set-variable variableName="minPrice" value="#[Double.MAX_VALUE]" doc:name="Initialize minPrice"/>
+        <logger message="#[variable:availabilityResponse]" level="INFO" doc:name="Logger"/>
+        <foreach collection="#[flowVars['availabilityResponse'].rooms]" doc:name="For each room offered">
+            <expression-filter expression="#[flowVars['rootMessage'].payload.roomPreference == payload.roomType]" doc:name="Filter on RoomType = Preference"/>
+            <filter ref="LowerPriceFilter" doc:name="Filter on lower price"/>
+            <set-variable variableName="minPrice" value="#[payload.price]" doc:name="Update minPrice"/>
+            <set-variable variableName="lowestPriceRoom" value="#[payload]" doc:name="Update lowestPriceRoom"/>
+        </foreach>
+        <expression-transformer expression="#[if (lowestPriceRoom != null) { lowestPriceRoom; } else { 'NOT FOUND' }]" doc:name="Expression"/>
+    </sub-flow>
+    <sub-flow name="getCommissionRate" doc:name="getCommissionRate">
+        <ee:cache cachingStrategy-ref="Caching_Strategy" filterExpression="#[diffDays(payload.beginDate) &lt; 30]" doc:name="Cache Commission Rate">
+            <http:outbound-endpoint exchange-pattern="request-response" host="localhost" port="9999" path="commissions?date=#[payload.beginDate]" method="GET" disableTransportTransformer="true" doc:name="Invoke Commission Service"/>
+        </ee:cache>
+        <object-to-string-transformer doc:name="Object to String"/>
+    </sub-flow>
+    <flow name="confirmReservations" doc:name="confirmReservations">
+        <vm:inbound-endpoint exchange-pattern="request-response" path="confirm" doc:name="confirm"/>
+        <enricher target="#[variable:paymentResponse]" doc:name="Enrich with paymentResponse">
+            <core:flow-ref name="authorisePayment" doc:name="Authorise Payment"/>
+        </enricher>
+        <set-variable variableName="rollback" value="&quot;CREDIT_CARD&quot;" doc:name="Set Rollback = CREDIT_CARD"/>
+        <enricher target="#[variable:flightConfirmationResponse]" doc:name="Enrich with flightConfirmationResponse">
+            <core:flow-ref name="confirmFlight" doc:name="Confirm Flight"/>
+        </enricher>
+        <set-variable variableName="rollback" value="&quot;FLIGHT&quot;" doc:name="Set Rollback = FLIGHT"/>
+        <enricher target="#[variable:hotelConfirmationResponse]" doc:name="Enrich with hotelConfirmationResponse">
+            <core:flow-ref name="confirmHotelRoom" doc:name="Confirm Hotel Room"/>
+        </enricher>
+        <choice-exception-strategy doc:name="Choice Exception Strategy">
+            <catch-exception-strategy when="#[rollback == &quot;CREDIT_CARD&quot;]" doc:name="Catch Exception Strategy">
+                <flow-ref name="cancelPayment" doc:name="Cancel Payment"/>
+                <flow-ref name="throwException" doc:name="throw Exception"/>
+            </catch-exception-strategy>
+            <catch-exception-strategy when="#[rollback == &quot;FLIGHT&quot;]" doc:name="Catch Exception Strategy">
+                <flow-ref name="cancelFlight" doc:name="Cancel Flight"/>
+                <flow-ref name="cancelPayment" doc:name="Cancel Payment"/>
+                <flow-ref name="throwException" doc:name="throwException"/>
+            </catch-exception-strategy>
+        </choice-exception-strategy>
+    </flow>
+    <flow name="throwException" doc:name="throwException">
+        <scripting:component doc:name="Throw Exception">
+            <scripting:script engine="Groovy">
+                <scripting:text><![CDATA[throw new RuntimeException("Unable to confirm reservations");]]></scripting:text>
+            </scripting:script>
+        </scripting:component>
+    </flow>
+    <flow name="commissionService" doc:name="commissionService">
+        <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="9999" path="commission" doc:name="/commission"/>
+        <choice doc:name="Choice">
+            <when expression="#[ diffDays(message.inboundProperties['http.query.params']['date']) &lt; 30]">
+                <processor-chain>
+                    <set-payload value="0.2" doc:name="Set Rate 0.2"/>
+                </processor-chain>
+            </when>
+            <otherwise>
+                <processor-chain>
+                    <set-payload value="0.1" doc:name="Set Rate 0.1"/>
+                </processor-chain>
+            </otherwise>
+        </choice>
+    </flow>
+    <flow name="databaseInitialisation" doc:name="databaseInitialisation">
+        <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="8787" path="populate" doc:name="HTTP"/>
+        <scripting:component doc:name="Initialise Database">
+            <scripting:script engine="Groovy">
+                <scripting:text><![CDATA[jdbcConnector = muleContext.getRegistry().lookupConnector("JDBCConnector");
+qr = jdbcConnector.getQueryRunner();
+conn = jdbcConnector.getConnection();
+qr.update(conn, "CREATE TABLE credit_cards (i int generated always as identity, user_id varchar(256), cc_number varchar(256), expiration_date date, security_code varchar(256))");
+
+qr.update(conn, "insert into credit_cards (user_id, cc_number, expiration_date, security_code) values('1','1234567890123456',date('2015-01-01'),'123')");
+qr.update(conn, "insert into credit_cards (user_id, cc_number, expiration_date, security_code) values('2','1234567890123456',date('2015-01-01'),'123')");
+qr.update(conn, "insert into credit_cards (user_id, cc_number, expiration_date, security_code) values('3','1234567890123456',date('2015-01-01'),'123')");
+return "db populated";]]></scripting:text>
+            </scripting:script>
+        </scripting:component>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <expression-transformer expression="table already populated" doc:name="&quot;table already populated&quot;"/>
+        </catch-exception-strategy>
+    </flow>
+    <sub-flow name="confirmFlight" doc:name="confirmFlight">
+        <expression-transformer expression="#[request = new FlightConfirmationRequest(); request.setReservationNumber(flightReservationResponse.reservationNumber); request.setCreditCardAuthorisationNumber(paymentResponse.authorisationNumber); request]" doc:name="Expression"/>
+        <cxf:jaxws-client operation="confirmFlight" clientClass="com.mule_air.airline.AirlineService_Service" port="AirlineSOAP" doc:name="AirlineService"/>
+        <http:outbound-endpoint exchange-pattern="request-response" host="localhost" port="9090" path="reservations" doc:name="/reservations"/>
+    </sub-flow>
+    <sub-flow name="confirmHotelRoom" doc:name="confirmHotelRoom">
+        <data-mapper:transform config-ref="TravelRequest to ConfirmationRequest" doc:name="TravelRequest to ConfirmationRequest">
+            <data-mapper:input-arguments>
+                <data-mapper:input-argument key="roomId">#[suitableRoom.id]</data-mapper:input-argument>
+            </data-mapper:input-arguments>
+        </data-mapper:transform>
+        <cxf:jaxws-client operation="confirmRoom" clientClass="com.mule_hotel.hotelservice.HotelService_Service" port="HotelServiceSOAP" doc:name="HotelService"/>
+        <http:outbound-endpoint exchange-pattern="request-response" host="localhost" port="9595" path="reservations" doc:name="/reservations"/>
+    </sub-flow>
+    <sub-flow name="authorisePayment" doc:name="authorisePayment">
+        <enricher source="payload[0]" target="#[variable:creditCard]" doc:name="Enrich with creditCard">
+            <jdbc:outbound-endpoint exchange-pattern="request-response" queryKey="findCreditCard" queryTimeout="-1" connector-ref="JDBCConnector" doc:name="Select * from credit_cards">
+                <jdbc:query key="findCreditCard" value="select cc_number, expiration_date, security_code from credit_cards where user_id = #[payload.userId]"/>
+            </jdbc:outbound-endpoint>
+        </enricher>
+        <expression-transformer expression="#[request = new com.mule_credit.creditcardservice.PaymentRequest(); request.setAmount(Float.valueOf(price)); request.setCcNumber(creditCard.cc_number); request.setExpirationDate(creditCard.expiration_date); request.setSecurityCode(creditCard.security_code); request]" doc:name="Expression"/>
+        <cxf:jaxws-client operation="authorisePayment" clientClass="com.mule_credit.creditcardservice.CreditCardService_Service" port="CreditCardServiceSOAP" doc:name="CreditCardService"/>
+        <http:outbound-endpoint exchange-pattern="request-response" host="localhost" port="9999" path="authorisations" doc:name="/authorisations"/>
+    </sub-flow>
+    <sub-flow name="cancelFlight" doc:name="cancelFlight">
+        <expression-transformer expression="#[request = new com.mule_air.airline.CancelationRequest(); request.setConfirmationNumber(flightConfirmationResponse.confirmationNumber); request]" doc:name="Expression"/>
+        <cxf:jaxws-client operation="cancelFlight" clientClass="com.mule_air.airline.AirlineService_Service" port="AirlineSOAP" doc:name="AirlineService"/>
+        <http:outbound-endpoint exchange-pattern="request-response" host="localhost" port="9090" path="reservations" doc:name="/reservations"/>
+    </sub-flow>
+    <sub-flow name="cancelPayment" doc:name="cancelPayment">
+        <expression-transformer expression="#[request = new com.mule_credit.creditcardservice.CancelationRequest(); request.setConfirmationNumber(paymentResponse.confirmationNumber); request]" doc:name="Expression"/>
+        <cxf:jaxws-client operation="cancelPayment" clientClass="com.mule_credit.creditcardservice.CreditCardService_Service" port="CreditCardServiceSOAP" doc:name="CreditCardService"/>
+        <http:outbound-endpoint exchange-pattern="request-response" host="localhost" port="9999" path="authorisations" doc:name="/authorisations"/>
+    </sub-flow>
+    <flow name="manufacturers" doc:name="manufacturers">
+        <ajax:inbound-endpoint channel="/orders/manufacturers" responseTimeout="10000" connector-ref="ajaxServer" doc:name="/orders/manufacturers"/>
+        <expression-transformer expression="#['[&quot;x&quot;,&quot;y&quot;,&quot;z&quot;]']" doc:name="Expression"/>
+    </flow>
+    <flow name="orderRequest" doc:name="orderRequest">
+        <ajax:inbound-endpoint channel="/orders/request" responseTimeout="10000" connector-ref="ajaxServer" doc:name="/orders/request"/>
+        <json:json-to-object-transformer doc:name="JSON to Object"/>
+        <http:outbound-endpoint exchange-pattern="request-response" host="localhost" port="1080" path="orders" doc:name="HTTP"/>
+    </flow>
+</mule>

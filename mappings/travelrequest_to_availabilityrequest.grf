@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="nialdarbey" created="Wed May 23 15:16:10 GMT-03:00 2012" guiVersion="3.3.0.M2" id="1337865134518" licenseCode="Unlicensed" licenseType="Unknown" modified="Wed May 23 15:16:10 GMT-03:00 2012" modifiedBy="nialdarbey" name="TravelRequest to AvailabilityRequest" revision="1.0" showComponentDetails="false">
+<Global>
+<Metadata __sourcePath="{}/object" _dataStructure="OBJECT" _id="__id" _type="Output" id="Metadata1">
+<Record fieldDelimiter="|" name="AvailabilityRequest" recordDelimiter="&#10;" type="delimited">
+<Field __artificialType="_id" __systemManaged="true" name="__id" type="string"/>
+<Field __sourcePath="{}/object/numberOfNights" label="numberOfNights" name="numberOfNights" type="integer"/>
+<Field __sourcePath="{}/object/startDate/day" label="day" name="day" type="integer"/>
+<Field __sourcePath="{}/object/startDate/fractionalSecond" label="fractionalSecond" name="fractionalSecond" type="decimal"/>
+<Field __sourcePath="{}/object/startDate/hour" label="hour" name="hour" type="integer"/>
+<Field __sourcePath="{}/object/startDate/millisecond" label="millisecond" name="millisecond" type="integer"/>
+<Field __sourcePath="{}/object/startDate/minute" label="minute" name="minute" type="integer"/>
+<Field __sourcePath="{}/object/startDate/month" label="month" name="month" type="integer"/>
+<Field __sourcePath="{}/object/startDate/second" label="second" name="second" type="integer"/>
+<Field __sourcePath="{}/object/startDate/timezone" label="timezone" name="timezone" type="integer"/>
+<Field __sourcePath="{}/object/startDate/year" label="year" name="year" type="integer"/>
+<Field __sourcePath="{}/object/travelAgentId" label="travelAgentId" name="travelAgentId" type="string"/>
+</Record>
+</Metadata>
+<Metadata __sourcePath="{}/object" _dataStructure="OBJECT" _id="__id" _type="Input" id="Metadata0">
+<Record fieldDelimiter="|" name="TravelRequest" recordDelimiter="&#10;" type="delimited">
+<Field __artificialType="_id" __systemManaged="true" name="__id" type="string"/>
+<Field __sourcePath="{}/object/beginDate/XMLSchemaType/localPart" label="localPart" name="localPart" type="string"/>
+<Field __sourcePath="{}/object/beginDate/XMLSchemaType/namespaceURI" label="namespaceURI" name="namespaceURI" type="string"/>
+<Field __sourcePath="{}/object/beginDate/XMLSchemaType/prefix" label="prefix" name="prefix" type="string"/>
+<Field __sourcePath="{}/object/beginDate/day" label="day" name="day" type="integer"/>
+<Field __sourcePath="{}/object/beginDate/eon" label="eon" name="eon" type="integer"/>
+<Field __sourcePath="{}/object/beginDate/eonAndYear" label="eonAndYear" name="eonAndYear" type="integer"/>
+<Field __sourcePath="{}/object/beginDate/fractionalSecond" label="fractionalSecond" name="fractionalSecond" type="decimal"/>
+<Field __sourcePath="{}/object/beginDate/hour" label="hour" name="hour" type="integer"/>
+<Field __sourcePath="{}/object/beginDate/millisecond" label="millisecond" name="millisecond" type="integer"/>
+<Field __sourcePath="{}/object/beginDate/minute" label="minute" name="minute" type="integer"/>
+<Field __sourcePath="{}/object/beginDate/month" label="month" name="month" type="integer"/>
+<Field __sourcePath="{}/object/beginDate/second" label="second" name="second" type="integer"/>
+<Field __sourcePath="{}/object/beginDate/timezone" label="timezone" name="timezone" type="integer"/>
+<Field __sourcePath="{}/object/beginDate/valid" label="valid" name="valid" type="boolean"/>
+<Field __sourcePath="{}/object/beginDate/year" label="year" name="year" type="integer"/>
+<Field __sourcePath="{}/object/fromCity" label="fromCity" name="fromCity" type="string"/>
+<Field __sourcePath="{}/object/nights" label="nights" name="nights" type="integer"/>
+<Field __sourcePath="{}/object/roomPreference" label="roomPreference" name="roomPreference" type="string"/>
+<Field __sourcePath="{}/object/toCity" label="toCity" name="toCity" type="string"/>
+<Field __sourcePath="{}/object/userId" label="userId" name="userId" type="string"/>
+</Record>
+</Metadata>
+<Dictionary>
+<Entry id="DictionaryEntry0" input="true" name="inputPayload" output="false" type="object"/>
+<Entry id="DictionaryEntry1" input="false" name="outputPayload" output="true" type="object"/>
+</Dictionary>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="dict:inputPayload" guiHeight="0" guiName="JAVA Reader" guiWidth="0" guiX="20" guiY="20" id="BEAN_READER0" type="BEAN_READER">
+<attr name="_data_format"><![CDATA[JAVA]]></attr>
+<attr name="schema"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<schema-object>
+  <typed-object-ref type-ref="com.mule_travel.travelagent.TravelRequest"/>
+  <typed-object type="java.math.BigInteger"/>
+  <typed-object type="int"/>
+  <typed-object type="com.mule_travel.travelagent.TravelRequest">
+    <typed-object-ref name="beginDate" type-ref="javax.xml.datatype.XMLGregorianCalendar"/>
+    <typed-object-ref name="fromCity" type-ref="java.lang.String"/>
+    <typed-object-ref name="nights" type-ref="java.math.BigInteger"/>
+    <typed-object-ref name="roomPreference" type-ref="java.lang.String"/>
+    <typed-object-ref name="toCity" type-ref="java.lang.String"/>
+    <typed-object-ref name="userId" type-ref="java.lang.String"/>
+  </typed-object>
+  <typed-object type="javax.xml.namespace.QName">
+    <typed-object-ref name="localPart" type-ref="java.lang.String"/>
+    <typed-object-ref name="namespaceURI" type-ref="java.lang.String"/>
+    <typed-object-ref name="prefix" type-ref="java.lang.String"/>
+  </typed-object>
+  <typed-object type="javax.xml.datatype.XMLGregorianCalendar">
+    <typed-object-ref name="XMLSchemaType" type-ref="javax.xml.namespace.QName"/>
+    <typed-object-ref name="day" type-ref="int"/>
+    <typed-object-ref name="eon" type-ref="java.math.BigInteger"/>
+    <typed-object-ref name="eonAndYear" type-ref="java.math.BigInteger"/>
+    <typed-object-ref name="fractionalSecond" type-ref="java.math.BigDecimal"/>
+    <typed-object-ref name="hour" type-ref="int"/>
+    <typed-object-ref name="millisecond" type-ref="int"/>
+    <typed-object-ref name="minute" type-ref="int"/>
+    <typed-object-ref name="month" type-ref="int"/>
+    <typed-object-ref name="second" type-ref="int"/>
+    <typed-object-ref name="timezone" type-ref="int"/>
+    <typed-object-ref name="valid" type-ref="boolean"/>
+    <typed-object-ref name="year" type-ref="int"/>
+  </typed-object>
+  <typed-object type="java.math.BigDecimal"/>
+  <typed-object type="java.lang.String"/>
+  <typed-object type="boolean"/>
+</schema-object>
+]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="dict:outputPayload" guiHeight="0" guiName="JAVA Writer" guiWidth="0" guiX="460" guiY="20" id="BEAN_WRITER0" type="BEAN_WRITER">
+<attr name="_data_format"><![CDATA[JAVA]]></attr>
+<attr name="schema"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<schema-object>
+  <typed-object-ref type-ref="com.mule_hotel.hotelservice.AvailabilityRequest"/>
+  <typed-object type="java.math.BigInteger"/>
+  <typed-object type="int"/>
+  <typed-object type="javax.xml.datatype.XMLGregorianCalendar">
+    <typed-object-ref name="day" type-ref="int"/>
+    <typed-object-ref name="fractionalSecond" type-ref="java.math.BigDecimal"/>
+    <typed-object-ref name="hour" type-ref="int"/>
+    <typed-object-ref name="millisecond" type-ref="int"/>
+    <typed-object-ref name="minute" type-ref="int"/>
+    <typed-object-ref name="month" type-ref="int"/>
+    <typed-object-ref name="second" type-ref="int"/>
+    <typed-object-ref name="timezone" type-ref="int"/>
+    <typed-object-ref name="year" type-ref="int"/>
+  </typed-object>
+  <typed-object type="com.mule_hotel.hotelservice.AvailabilityRequest">
+    <typed-object-ref name="numberOfNights" type-ref="java.math.BigInteger"/>
+    <typed-object-ref name="startDate" type-ref="javax.xml.datatype.XMLGregorianCalendar"/>
+    <typed-object-ref name="travelAgentId" type-ref="java.lang.String"/>
+  </typed-object>
+  <typed-object type="java.lang.String"/>
+  <typed-object type="java.math.BigDecimal"/>
+</schema-object>
+]]></attr>
+</Node>
+</Phase>
+</Graph>

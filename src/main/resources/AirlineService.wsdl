@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<wsdl:definitions xmlns:air="http://www.mule-air.com/Airline/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="Airline" targetNamespace="http://www.mule-air.com/Airline/">
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://www.mule-air.com/Airline/">
+      <xsd:element name="FlightReservationRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="seatCount" type="xsd:integer"/>
+            <xsd:element name="travelDate" type="xsd:date" />
+            <xsd:element name="returnDate" type="xsd:date" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="FlightReservationResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="reservationNumber" type="xsd:string"/>
+            <xsd:element name="expiryDate" type="xsd:date" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="FlightConfirmationRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="reservationNumber" type="xsd:string"/>
+            <xsd:element name="creditCardAuthorisationNumber" type="xsd:string" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="FlightConfirmationResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="confirmationNumber" type="xsd:string"/>
+            <xsd:element name="price" type="xsd:float" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="FlightReservationRequest">
+    <wsdl:part element="air:FlightReservationRequest" name="flightReservationRequest"/>
+  </wsdl:message>
+  <wsdl:message name="FlightReservationResponse">
+    <wsdl:part element="air:FlightReservationResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="FlightConfirmationRequest">
+    <wsdl:part element="air:FlightConfirmationRequest" name="flightConfirmationRequest"/>
+  </wsdl:message>
+  <wsdl:message name="FlightConfirmationResponse">
+    <wsdl:part element="air:FlightConfirmationResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:portType name="AirlineService">
+    <wsdl:operation name="reserveFlight">
+      <wsdl:input message="air:FlightReservationRequest"/>
+      <wsdl:output message="air:FlightReservationResponse"/>
+    </wsdl:operation>
+    <wsdl:operation name="confirmFlight">
+      <wsdl:input message="air:FlightConfirmationRequest"/>
+      <wsdl:output message="air:FlightConfirmationResponse"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="AirlineSOAP" type="air:AirlineService">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="reserveFlight">
+      <soap:operation soapAction="http://www.mule-air.com/Airline/reserveFlight"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="confirmFlight">
+      <soap:operation soapAction="http://www.mule-air.com/Airline/confirmFlight"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="AirlineService">
+    <wsdl:port binding="air:AirlineSOAP" name="AirlineSOAP">
+      <soap:address location="http://www.mule-air.com"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
