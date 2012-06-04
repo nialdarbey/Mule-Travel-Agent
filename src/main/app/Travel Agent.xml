@@ -13,7 +13,7 @@ http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mul
 http://www.mulesoft.org/schema/mule/jbossts http://www.mulesoft.org/schema/mule/jbossts/current/mule-jbossts.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd 
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd ">
-    <ajax:connector name="ajaxServer" serverUrl="http://0.0.0.0:8090/orders" resourceBase="${app.home}/docroot" jsonCommented="true" doc:name="ajaxServer"/>
+    <ajax:connector name="ajaxServer" serverUrl="http://0.0.0.0:8090/travelAgent" resourceBase="${app.home}/docroot" jsonCommented="true" doc:name="ajaxServer"/>
     <expression-filter expression="#[payload.price &lt; flowVars['minPrice']]" name="LowerPriceFilter" doc:name="Expression"/>
     <configuration doc:name="Configuration">
         <expression-language autoResolveVariables="false"> 
@@ -196,11 +196,11 @@ return "db populated";]]></scripting:text>
         <http:outbound-endpoint exchange-pattern="request-response" host="localhost" port="9999" path="authorisations" doc:name="/authorisations"/>
     </sub-flow>
     <flow name="manufacturers" doc:name="manufacturers">
-        <ajax:inbound-endpoint channel="/orders/manufacturers" responseTimeout="10000" connector-ref="ajaxServer" doc:name="/orders/manufacturers"/>
+        <ajax:inbound-endpoint channel="/travelAgent/cities" responseTimeout="10000" connector-ref="ajaxServer" doc:name="/orders/manufacturers"/>
         <expression-transformer expression="#['[&quot;x&quot;,&quot;y&quot;,&quot;z&quot;]']" doc:name="Expression"/>
     </flow>
     <flow name="orderRequest" doc:name="orderRequest">
-        <ajax:inbound-endpoint channel="/orders/request" responseTimeout="10000" connector-ref="ajaxServer" doc:name="/orders/request"/>
+        <ajax:inbound-endpoint channel="/travelAgent/request" responseTimeout="10000" connector-ref="ajaxServer" doc:name="/orders/request"/>
         <json:json-to-object-transformer doc:name="JSON to Object"/>
         <http:outbound-endpoint exchange-pattern="request-response" host="localhost" port="1080" path="orders" doc:name="HTTP"/>
     </flow>
