@@ -10,9 +10,10 @@ http://www.mulesoft.org/schema/mule/cxf http://www.mulesoft.org/schema/mule/cxf/
 http://www.mulesoft.org/schema/mule/ee/jdbc http://www.mulesoft.org/schema/mule/ee/jdbc/current/mule-jdbc-ee.xsd 
 http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schema/mule/ee/data-mapper/3.2/mule-data-mapper.xsd 
 http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd 
-http://www.mulesoft.org/schema/mule/jbossts http://www.mulesoft.org/schema/mule/jbossts/current/mule-jbossts.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd 
-http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd ">
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd 
+http://www.mulesoft.org/schema/mule/jbossts http://www.mulesoft.org/schema/mule/jbossts/current/mule-jbossts.xsd 
+">
     <ajax:connector name="ajaxServer" serverUrl="http://0.0.0.0:8090/travelAgent" resourceBase="${app.home}/docroot" jsonCommented="true" doc:name="ajaxServer"/>
     <expression-filter expression="#[payload.price &lt; flowVars['minPrice']]" name="LowerPriceFilter" doc:name="Expression"/>
     <configuration doc:name="Configuration">
@@ -45,7 +46,17 @@ http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/cor
             <scripting:text><![CDATA[throw new Exception("Sorry, we could not process your request");]]></scripting:text>
         </scripting:script>
     </scripting:transformer>
-    <flow name="Travel_AgentFlow1" doc:name="Travel_AgentFlow1">
+    <flow name="cities" doc:name="cities">
+        <ajax:inbound-endpoint channel="/travelAgent/cities" responseTimeout="10000" connector-ref="ajaxServer" doc:name="/travelAgent/cities"/>
+        <expression-transformer expression="#['[&quot;Dublin&quot;,&quot;Rome&quot;,&quot;Buenos Aires&quot;]']" doc:name="Create Cities"/>
+    </flow>
+    <flow name="orderRequest" doc:name="orderRequest">
+        <ajax:inbound-endpoint channel="/travelAgent/request" responseTimeout="10000" connector-ref="ajaxServer" doc:name="/travelAgent/request"/>
+        <json:json-to-object-transformer doc:name="JSON TravelRequest to Java TravelRequest"/>
+        <cxf:jaxws-client operation="bookTrip" clientClass="com.mule_travel.travelagent.TravelAgentService_Service" port="TravelAgentSOAP" enableMuleSoapHeaders="true" doc:name="TravelAgentService Client"/>
+        <http:outbound-endpoint exchange-pattern="request-response" host="localhost" port="8081" path="reservations" doc:name="/reservations"/>
+    </flow>
+    <flow name="reservations" doc:name="reservations">
         <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="8081" path="reservations" doc:name="/reservations"/>
         <cxf:jaxws-service port="80" serviceClass="com.mule_travel.travelagent.TravelAgentService" doc:name="TravelAgentService"/>
         <enricher target="#[header:session:flightReservationResponse]" doc:name="Enrich with flightReservationResponse">
@@ -87,7 +98,7 @@ http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/cor
             <set-variable variableName="minPrice" value="#[payload.price]" doc:name="Update minPrice"/>
             <set-variable variableName="lowestPriceRoom" value="#[payload]" doc:name="Update lowestPriceRoom"/>
         </foreach>
-        <expression-transformer expression="#[if (lowestPriceRoom != null) { lowestPriceRoom; } else { 'NOT FOUND' }]" doc:name="Expression"/>
+        <expression-transformer expression="#[if (flowVars['lowestPriceRoom'] != null) { flowVars['lowestPriceRoom'] } else { 'NOT FOUND' }]" doc:name="Expression"/>
     </sub-flow>
     <sub-flow name="getCommissionRate" doc:name="getCommissionRate">
         <ee:cache cachingStrategy-ref="Caching_Strategy" filterExpression="#[diffDays(payload.beginDate) &lt; 30]" doc:name="Cache Commission Rate">
@@ -195,13 +206,4 @@ return "db populated";]]></scripting:text>
         <cxf:jaxws-client operation="cancelPayment" clientClass="com.mule_credit.creditcardservice.CreditCardService_Service" port="CreditCardServiceSOAP" doc:name="CreditCardService"/>
         <http:outbound-endpoint exchange-pattern="request-response" host="localhost" port="9999" path="authorisations" doc:name="/authorisations"/>
     </sub-flow>
-    <flow name="manufacturers" doc:name="manufacturers">
-        <ajax:inbound-endpoint channel="/travelAgent/cities" responseTimeout="10000" connector-ref="ajaxServer" doc:name="/orders/manufacturers"/>
-        <expression-transformer expression="#['[&quot;x&quot;,&quot;y&quot;,&quot;z&quot;]']" doc:name="Expression"/>
-    </flow>
-    <flow name="orderRequest" doc:name="orderRequest">
-        <ajax:inbound-endpoint channel="/travelAgent/request" responseTimeout="10000" connector-ref="ajaxServer" doc:name="/orders/request"/>
-        <json:json-to-object-transformer doc:name="JSON to Object"/>
-        <http:outbound-endpoint exchange-pattern="request-response" host="localhost" port="1080" path="orders" doc:name="HTTP"/>
-    </flow>
 </mule>
